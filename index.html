@@ -1,0 +1,189 @@
+<style>
+	body {margin: 0}
+</style>
+<canvas id="canvas" height="500" width="500"></canvas>
+<script>
+"use strict";
+	
+var canvas = document.getElementById("canvas");
+var ctx = canvas.getContext("2d");
+	
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+
+var gravity = 0.1;
+var baseGravity = gravity;
+var platforms = [];
+	
+class Player {
+    constructor(x, y) {
+        this.position = {
+            x: x,
+            y: y,
+        };
+        this.width=20;
+        this.height=20;
+        this.w=false;
+        this.s=false;
+        this.a=false;
+        this.d=false;
+		this.left = this.position.x;
+		this.top = this.position.y;
+		this.right = this.position.x + this.width;
+		this.bottom = this.position.y + this.height;
+        this.canJump = true;
+		this.isJumping = false;
+		this.colliding = false;
+		this.spawn();
+		this.vel = 0;
+    }
+	
+    spawn() {
+        ctx.fillStyle = 'blue';
+        ctx.fillRect(this.position.x,this.position.y,this.width,this.height);
+	};
+	
+    jump(){
+        if (player.canJump){
+	        this.canJump = false
+	        this.colliding = false
+	        this.isJumping = true
+            player.vel = -5
+            this.isJumping = false
+		}
+	}
+}
+	
+class Platform {
+	constructor(x, y) {
+		this.position = {
+			x: x,
+			y: y,
+            width: 20,
+	        height: 20
+		};
+		this.left = this.position.x;
+		this.top = this.position.y;
+		this.right = this.position.x + this.position.width;
+		this.bottom = this.position.y + this.position.height;
+		this.spawn();
+	}
+	
+	spawn() {
+		ctx.fillStyle = 'lightgreen';
+		ctx.fillRect(this.position.x,this.position.y,this.position.width,this.position.height);
+	};	
+}
+	
+var player = new Player(50,50);
+	
+function testCollision(entity){
+	if (entity.position.x + entity.width > canvas.width){
+		entity.position.x = canvas.width - 20;
+	}
+	if (entity.position.y + entity.height > canvas.height){
+		entity.position.x = 50
+		entity.position.y = 50
+	}
+	if (entity.position.x < 0){
+		entity.position.x = 0;
+	}
+	if (entity.position.y < 0){
+		entity.position.y = 0;
+	}
+}
+	
+function intersectRect(r1, r2) {
+  return !(r2.left > r1.right || 
+           r2.right < r1.left || 
+           r2.top > r1.bottom ||
+           r2.bottom < r1.top);
+}	
+	
+window.addEventListener('keydown', event => {
+	if (event.code === "KeyW") {
+		player.jump()
+	}
+	if (event.code === "KeyD") {
+		player.d = true;
+	}
+	if (event.code === "KeyA") {
+		player.a = true;
+	}
+	if (event.code === "KeyS"){
+		platforms.push(new Platform(player.position.x,player.position.y))
+		player.position.x = 50;
+		player.position.y = 50;
+		player.colliding = false;
+		player.vel = 0;
+	}
+})
+	
+window.addEventListener('keyup', event => {
+	if (event.code === "KeyD") {
+	    player.d = false;
+	}
+	if (event.code === "KeyA") {
+	    player.a = false;
+	}
+})
+
+setInterval(update,20)		
+
+function update(){
+	ctx.fillStyle = 'lightblue';
+	ctx.fillRect(0,0,canvas.width,canvas.height);
+
+	for (var key in platforms){
+		platforms[key].spawn();
+		if (isOnFloor()){
+			player.colliding = true;
+			player.vel = 0;
+			player.canJump = true;
+		} else {
+			player.colliding = false;
+			gravity = baseGravity;
+		}
+	}
+
+	if (player.a){
+		player.position.x -= 5;
+	}
+	if (player.d){
+		player.position.x += 5;
+	}
+	if (!player.colliding) {
+		player.position.y += player.vel;
+		player.vel += gravity;
+		if (player.vel > 6) {
+			player.vel = 6;
+		}
+	}
+	
+	player.spawn();
+	
+	if (player.colliding){
+		player.canJump = true
+		player.isJumping = false
+		player.vel = 0;
+	}
+	if (player.position.x > window.innerWidth){
+		platforms = []
+		baseGravity += 0.1
+		player.position.x = 50
+		player.position.y = 50
+	}
+}
+
+function isOnFloor() {
+	for (var i in platforms) {
+		if ((player.position.x >= platforms[i].position.x && player.position.x <= platforms[i].position.x + 20) || (player.position.x + 20 >= platforms[i].position.x && player.position.x + 20 <= platforms[i].position.x + 20)) {
+			if (player.position.y + 20 > platforms[i].position.y && player.position.y + 20 < platforms[i].position.y + 20) {
+				player.position.y = platforms[i].position.y - 20;
+				return true;
+			}
+		}
+	}
+	return false;
+}
+</script>
