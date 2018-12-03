@@ -11,9 +11,13 @@ var ctx = canvas.getContext("2d");
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 
+ctx.font = '30px Arial'
+
 var gravity = 0.1;
 var baseGravity = gravity;
 var platforms = [];
+var Sacrifice = 0
+var Level = 1
 	
 class Player {
     constructor(x, y) {
@@ -77,22 +81,6 @@ class Platform {
 	
 var player = new Player(50,50);
 	
-function testCollision(entity){
-	if (entity.position.x + entity.width > canvas.width){
-		entity.position.x = canvas.width - 20;
-	}
-	if (entity.position.y + entity.height > canvas.height){
-		entity.position.x = 50
-		entity.position.y = 50
-	}
-	if (entity.position.x < 0){
-		entity.position.x = 0;
-	}
-	if (entity.position.y < 0){
-		entity.position.y = 0;
-	}
-}
-	
 function intersectRect(r1, r2) {
   return !(r2.left > r1.right || 
            r2.right < r1.left || 
@@ -116,6 +104,7 @@ window.addEventListener('keydown', event => {
 		player.position.y = 50;
 		player.colliding = false;
 		player.vel = 0;
+		Sacrifice += 1
 	}
 })
 	
@@ -147,16 +136,16 @@ function update(){
 	}
 
 	if (player.a){
-		player.position.x -= 5;
+		player.position.x -= 7;
 	}
 	if (player.d){
-		player.position.x += 5;
+		player.position.x += 7;
 	}
 	if (!player.colliding) {
 		player.position.y += player.vel;
 		player.vel += gravity;
-		if (player.vel > 6) {
-			player.vel = 6;
+		if (player.vel > 12) {
+			player.vel = 12;
 		}
 	}
 	
@@ -172,7 +161,17 @@ function update(){
 		baseGravity += 0.05
 		player.position.x = 50
 		player.position.y = 50
+		Level += 1
 	}
+	if (player.position.y > window.innerHeight){
+		platforms = []
+		player.position.x = 50
+		player.position.y = 50
+	}
+	
+	ctx.fillStyle = 'black'
+	ctx.fillText("Level "+Level,10,50)
+	ctx.fillText(Sacrifice + " Sacrifices",10,100)
 }
 
 function isOnFloor() {
